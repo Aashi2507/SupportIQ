@@ -1,0 +1,23 @@
+Original rows: 20000
+Cleaned English rows: 11921
+Training rows: 9536
+Testing rows: 2385
+
+Category counts:
+queue
+Technical Support                  3412
+Product Support                    2231
+Customer Service                   1859
+IT Support                         1391
+Billing and Payments               1301
+Returns and Exchanges               582
+Service Outages and Maintenance     442
+Sales and Pre-Sales                 330
+Human Resources                     205
+General Inquiry                     168
+
+Priority counts:
+priority
+medium    4951
+high      4570
+low       2400
