@@ -1,0 +1,5 @@
+target,features,accuracy,macro_f1,test_rows
+queue,body_only,0.5581,0.5475,2385
+queue,subject_plus_body,0.5635,0.558,2385
+priority,body_only,0.634,0.6165,2385
+priority,subject_plus_body,0.6298,0.6154,2385
