@@ -1,18 +1,18 @@
 
 from transformers import pipeline
 
-# Load a pretrained sentiment-analysis model
-print("Loading sentiment analysis model...")
+# Load a pretrained 3-class sentiment model
+print("Loading 3-class sentiment analysis model...")
 print("The first run may download model files.")
 
 sentiment_model = pipeline(
     "sentiment-analysis",
-    model="distilbert/distilbert-base-uncased-finetuned-sst-2-english",
+    model="cardiffnlp/twitter-roberta-base-sentiment-latest",
 )
 
 
 def analyze_sentiment(text):
-    """Classify English text as POSITIVE or NEGATIVE."""
+    """Classify English text as positive, neutral, or negative."""
     if not text or not text.strip():
         raise ValueError("Please enter a complaint.")
 
