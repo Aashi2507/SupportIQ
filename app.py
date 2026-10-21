@@ -660,15 +660,15 @@ elif role == "CUSTOMER" and page == "Submit Complaint":
                     from src.ml_service import analyze_ticket
 
                     result = analyze_ticket(clean_body)
-                    sentiment_data = result["sentiment"]
+                    sentiment_data = result.get("sentiment") or {}
                     ticket_id = save_ticket(
                         user_id=user["user_id"],
                         subject=clean_subject,
                         body=clean_body,
                         category=result["category"],
                         priority=result["priority"],
-                        sentiment=sentiment_data["sentiment"],
-                        sentiment_score=sentiment_data["score"],
+                        sentiment=sentiment_data.get("sentiment"),
+sentiment_score=sentiment_data.get("score"),
                     )
                 st.success(f"Your complaint has been submitted. Ticket ID: #{ticket_id}.")
                 st.info("Our support team will review it. Track progress in My Tickets.")

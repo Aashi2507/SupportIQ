@@ -1,11 +1,11 @@
 
+import logging
 from pathlib import Path
 
 import joblib
 
-from similar_tickets import find_similar_tickets
-from sentiment_analysis import analyze_sentiment
 
+logger = logging.getLogger(__name__)
 
 # Project paths
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -23,43 +23,55 @@ def _load_model(path: Path):
     return joblib.load(path)
 
 
-# Load classification models once when this module is imported.
+# Load required classification models once.
 category_model = _load_model(CATEGORY_MODEL_PATH)
 priority_model = _load_model(PRIORITY_MODEL_PATH)
 
 
 def analyze_ticket(complaint: str) -> dict:
-    """
-    Analyze a customer complaint.
-
-    Returns category, priority, sentiment, and similar historical tickets.
-    """
+    """Analyze a complaint; secondary-feature failures are non-fatal."""
     if not isinstance(complaint, str) or not complaint.strip():
         raise ValueError("Please enter a valid complaint.")
 
     complaint = complaint.strip()
 
-    # Predict the support queue and ticket priority.
+    # Core predictions are required. Do not invent them if prediction fails.
     category = str(category_model.predict([complaint])[0])
     priority = str(priority_model.predict([complaint])[0])
 
-    # Analyze customer sentiment.
-    sentiment = analyze_sentiment(complaint)
+    sentiment = None
+    similar_tickets = []
+    warnings = []
 
-    # Find similar historical tickets.
-    matches = find_similar_tickets(complaint, top_n=5)
+    # Sentiment is optional. Its failure should not block ticket submission.
+    try:
+        from sentiment_analysis import analyze_sentiment
 
-    # Convert the DataFrame into a list of dictionaries for the UI.
-    similar_tickets = matches.to_dict(orient="records")
+        sentiment = analyze_sentiment(complaint)
+    except Exception:
+        logger.exception("Sentiment analysis failed")
+        warnings.append("Sentiment analysis is temporarily unavailable.")
 
-    # Convert NumPy numeric values to standard Python floats.
-    for ticket in similar_tickets:
-        if "similarity_score" in ticket:
-            ticket["similarity_score"] = float(ticket["similarity_score"])
+    # Similar-ticket search is optional too.
+    try:
+        from similar_tickets import find_similar_tickets
+
+        matches = find_similar_tickets(complaint, top_n=5)
+        similar_tickets = matches.to_dict(orient="records")
+
+        for ticket in similar_tickets:
+            if "similarity_score" in ticket:
+                ticket["similarity_score"] = float(
+                    ticket["similarity_score"]
+                )
+    except Exception:
+        logger.exception("Similar-ticket search failed")
+        warnings.append("Similar-ticket search is temporarily unavailable.")
 
     return {
         "category": category,
         "priority": priority,
         "sentiment": sentiment,
         "similar_tickets": similar_tickets,
+        "warnings": warnings,
     }
